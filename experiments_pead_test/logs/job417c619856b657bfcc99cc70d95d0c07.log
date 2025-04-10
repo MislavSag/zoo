@@ -1,0 +1,167 @@
+### [bt]: This is batchtools v0.9.17
+### [bt]: Starting calculation of 1 jobs
+### [bt]: Setting working directory to 'C:/Users/Mislav/projects_r/zoo'
+Loading required package: data.table
+Loading required package: gausscov
+Loading required package: paradox
+Loading required package: mlr3
+Loading required package: mlr3pipelines
+Loading required package: mlr3tuning
+Loading required package: mlr3misc
+Loading required package: future
+Loading required package: future.apply
+Loading required package: mlr3extralearners
+Loading required package: mlr3finance
+### [bt]: Memory measurement disabled
+### [bt]: Starting job [batchtools job.id=1]
+### [bt]: Generating problem instance for problem '68a0eb23d84df1a6' ...
+### [bt]: Applying algorithm 'run_learner' on problem '68a0eb23d84df1a6' for job 1 (seed = 2) ...
+INFO  [22:51:57.779] [mlr3] Applying learner 'finautoml' on task 'zoo_month' (iter 1/4)
+INFO  [22:51:59.896] [bbotk] Starting to optimize 24 parameter(s) with '<OptimizerBatchRandomSearch>' and '<TerminatorEvals> [n_evals=1, k=0]'
+INFO  [22:52:00.272] [bbotk] Evaluating 1 configuration(s)
+INFO  [22:52:00.294] [mlr3] Running benchmark with 1 resampling iterations
+INFO  [22:52:00.346] [mlr3] Applying learner 'filter_target_branch.nop_filter_target.filter_target.filter_target_unbranch.dropnacol.dropna.removeconstants_1.fixfactors.winsorize.removeconstants_2.dropcor.scale_branch.uniformization.scale.scale_unbranch.dropna_v2.nop_union_pca.pca.ica.feature_union_pca.disr.jmim.jmi.mim.mrmr.njmim.cmim.feature_union_filters.removeconstants_3.ranger.ranger.xgboost.xgboost.nnet.nnet.mlp.torch_ingress_num.mlp.nn_linear.mlp.nn_relu.mlp.nn_head.mlp.torch_loss.mlp.torch_optimizer.mlp.torch_callbacks.mlp.torch_model_regr.regravg' on task 'zoo_month' (iter 1/1)
+# weights:  243
+initial  value 330.911324 
+iter  10 value 8.828804
+iter  20 value 5.254606
+iter  30 value 3.344958
+iter  40 value 2.349783
+iter  50 value 2.007506
+iter  60 value 1.841422
+iter  70 value 1.758351
+iter  80 value 1.710354
+iter  90 value 1.680603
+iter 100 value 1.656894
+iter 110 value 1.639423
+iter 120 value 1.625173
+iter 130 value 1.611436
+iter 140 value 1.600876
+iter 150 value 1.587568
+iter 160 value 1.566317
+iter 170 value 1.551830
+iter 180 value 1.542233
+iter 190 value 1.535654
+iter 200 value 1.532975
+iter 210 value 1.531423
+iter 220 value 1.530575
+iter 230 value 1.529971
+iter 240 value 1.529272
+iter 250 value 1.528274
+iter 260 value 1.526440
+iter 270 value 1.519105
+iter 280 value 1.515542
+iter 290 value 1.514306
+iter 300 value 1.513713
+iter 310 value 1.513417
+iter 320 value 1.513232
+iter 330 value 1.513124
+iter 340 value 1.513057
+iter 350 value 1.513012
+iter 360 value 1.512985
+iter 370 value 1.512969
+iter 380 value 1.512964
+iter 390 value 1.512962
+iter 400 value 1.512960
+iter 410 value 1.512959
+iter 420 value 1.512958
+final  value 1.512957 
+stopped after 427 iterations
+INFO  [22:52:54.839] [mlr3] Finished benchmark
+INFO  [22:52:54.920] [bbotk] Result of batch 1:
+INFO  [22:52:54.928] [bbotk]  filter_target_branch.selection filter_target.lower_percentile
+INFO  [22:52:54.928] [bbotk]            filter_target_select                      0.1336104
+INFO  [22:52:54.928] [bbotk]  filter_target.upper_percentile dropcor.method dropcor.cutoff winsorize.upper
+INFO  [22:52:54.928] [bbotk]                       0.8887679        kendall           0.80             0.8
+INFO  [22:52:54.928] [bbotk]  winsorize.lower scale_branch.selection ranger.ranger.max.depth
+INFO  [22:52:54.928] [bbotk]             0.02                  scale                       9
+INFO  [22:52:54.928] [bbotk]  ranger.ranger.replace ranger.ranger.mtry.ratio ranger.ranger.num.trees
+INFO  [22:52:54.928] [bbotk]                   TRUE                0.8323593                     370
+INFO  [22:52:54.928] [bbotk]  ranger.ranger.splitrule xgboost.xgboost.alpha xgboost.xgboost.max_depth
+INFO  [22:52:54.928] [bbotk]                 variance              2.919084                        20
+INFO  [22:52:54.928] [bbotk]  xgboost.xgboost.eta xgboost.xgboost.nrounds xgboost.xgboost.subsample
+INFO  [22:52:54.928] [bbotk]            -7.130411                    2225                 0.1674815
+INFO  [22:52:54.928] [bbotk]  nnet.nnet.size nnet.nnet.decay nnet.nnet.maxit mlp.torch_model_regr.batch_size
+INFO  [22:52:54.928] [bbotk]              11       0.0388162             427                              26
+INFO  [22:52:54.928] [bbotk]  mlp.torch_optimizer.lr mlp.torch_model_regr.epochs  regr.mse warnings errors
+INFO  [22:52:54.928] [bbotk]               -6.811469                         108 0.1607203        0      0
+INFO  [22:52:54.928] [bbotk]  runtime_learners                                uhash
+INFO  [22:52:54.928] [bbotk]             54.41 ed202230-5122-4fff-a4d7-797d99ba8c29
+INFO  [22:52:55.048] [bbotk] Finished optimizing after 1 evaluation(s)
+INFO  [22:52:55.049] [bbotk] Result:
+INFO  [22:52:55.055] [bbotk]  filter_target_branch.selection filter_target.lower_percentile
+INFO  [22:52:55.055] [bbotk]                          <char>                          <num>
+INFO  [22:52:55.055] [bbotk]            filter_target_select                      0.1336104
+INFO  [22:52:55.055] [bbotk]  filter_target.upper_percentile dropcor.method dropcor.cutoff winsorize.upper
+INFO  [22:52:55.055] [bbotk]                           <num>         <char>         <char>          <char>
+INFO  [22:52:55.055] [bbotk]                       0.8887679        kendall           0.80             0.8
+INFO  [22:52:55.055] [bbotk]  winsorize.lower scale_branch.selection ranger.ranger.max.depth
+INFO  [22:52:55.055] [bbotk]           <char>                 <char>                   <int>
+INFO  [22:52:55.055] [bbotk]             0.02                  scale                       9
+INFO  [22:52:55.055] [bbotk]  ranger.ranger.replace ranger.ranger.mtry.ratio ranger.ranger.num.trees
+INFO  [22:52:55.055] [bbotk]                 <lgcl>                    <num>                   <int>
+INFO  [22:52:55.055] [bbotk]                   TRUE                0.8323593                     370
+INFO  [22:52:55.055] [bbotk]  ranger.ranger.splitrule xgboost.xgboost.alpha xgboost.xgboost.max_depth
+INFO  [22:52:55.055] [bbotk]                   <char>                 <num>                     <int>
+INFO  [22:52:55.055] [bbotk]                 variance              2.919084                        20
+INFO  [22:52:55.055] [bbotk]  xgboost.xgboost.eta xgboost.xgboost.nrounds xgboost.xgboost.subsample
+INFO  [22:52:55.055] [bbotk]                <num>                   <int>                     <num>
+INFO  [22:52:55.055] [bbotk]            -7.130411                    2225                 0.1674815
+INFO  [22:52:55.055] [bbotk]  nnet.nnet.size nnet.nnet.decay nnet.nnet.maxit mlp.torch_model_regr.batch_size
+INFO  [22:52:55.055] [bbotk]           <int>           <num>           <int>                           <int>
+INFO  [22:52:55.055] [bbotk]              11       0.0388162             427                              26
+INFO  [22:52:55.055] [bbotk]  mlp.torch_optimizer.lr mlp.torch_model_regr.epochs learner_param_vals
+INFO  [22:52:55.055] [bbotk]                   <num>                       <int>             <list>
+INFO  [22:52:55.055] [bbotk]               -6.811469                         108         <list[78]>
+INFO  [22:52:55.055] [bbotk]    x_domain  regr.mse
+INFO  [22:52:55.055] [bbotk]      <list>     <num>
+INFO  [22:52:55.055] [bbotk]  <list[24]> 0.1607203
+# weights:  155
+initial  value 251.348515 
+iter  10 value 42.111253
+iter  20 value 34.925303
+iter  30 value 29.609109
+iter  40 value 24.631648
+iter  50 value 19.586200
+iter  60 value 16.985952
+iter  70 value 14.956967
+iter  80 value 13.663728
+iter  90 value 13.093553
+iter 100 value 12.607457
+iter 110 value 11.835531
+iter 120 value 11.490657
+iter 130 value 11.244638
+iter 140 value 10.975603
+iter 150 value 10.865839
+iter 160 value 10.752963
+iter 170 value 10.638725
+iter 180 value 10.592582
+iter 190 value 10.549016
+iter 200 value 10.493933
+iter 210 value 10.199277
+iter 220 value 10.009361
+iter 230 value 9.906503
+iter 240 value 9.841558
+iter 250 value 9.769323
+iter 260 value 9.721662
+iter 270 value 9.684123
+iter 280 value 9.643382
+iter 290 value 9.619028
+iter 300 value 9.602214
+iter 310 value 9.585571
+iter 320 value 9.579761
+iter 330 value 9.573859
+iter 340 value 9.559077
+iter 350 value 9.529178
+iter 360 value 9.432175
+iter 370 value 9.248432
+iter 380 value 9.140656
+iter 390 value 9.012980
+iter 400 value 8.905905
+iter 410 value 8.770607
+iter 420 value 8.678604
+final  value 8.625118 
+stopped after 427 iterations
+
+### [bt]: Job terminated successfully [batchtools job.id=1]
+### [bt]: Calculation finished!
