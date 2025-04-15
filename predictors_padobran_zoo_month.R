@@ -6,8 +6,8 @@ library(reticulate)
 
 
 # paths
-PATH_PREDICTORS = file.path("predictors_padobran_zoo_month")
-PATH_DATASET    = file.path("dataset_zoo_month")
+PATH_PREDICTORS = file.path("predictors_zoo_month")
+PATH_DATASET    = file.path("prices_zoo_month")
 
 # python environment
 # reticulate::use_virtualenv("/home/sn/projects_py/pyquant", required = TRUE)
@@ -25,27 +25,25 @@ if (!dir.exists(PATH_PREDICTORS)) {
 
 # Get index
 i = as.integer(Sys.getenv('PBS_ARRAY_INDEX'))
-# i = 1
 
 # Get symbol
-# symbols = gsub("\\.csv", "", list.files("/home/sn/data/strategies/pead/dataset"))
+# symbols = gsub("\\.csv", "", list.files("D:/strategies/zoo/prices"))
 symbols = gsub("\\.csv", "", list.files(PATH_DATASET))
 symbol_i = symbols[i]
 
 # Get data
-# dataset = fread(file.path("/home/sn/data/strategies/pead/dataset", paste0(symbol_i, ".csv")))
-# ohlcv = fread(file.path("/home/sn/data/strategies/pead/prices", paste0(symbol_i, ".csv")))
-dataset = fread(file.path("dataset", paste0(symbol_i, ".csv")))
+# ohlcv = fread(file.path("D:/strategies/zoo/prices", paste0(symbol_i, ".csv")))
 ohlcv = fread(file.path("prices", paste0(symbol_i, ".csv")))
 
 # Create Ohlcv object
-ohlcv = Ohlcv$new(ohlcv[, .(symbol, date, open, high, low, close, volume)], date_col = "date")
+ohlcv = Ohlcv$new(ohlcv[, .(symbol, date, open, high, low, close, volume, pbs_i)], 
+                  date_col = "date")
 
 # Lag parameter
 # ako je red u events amc. label je open_t+1 / close_t; lag je 1L
 # ako je red u events bmo. label je open_t / close_t-1; lag je 2L
 # radi jednostavnosti lag_ = 2L
-lag_ = -1L
+lag_ = 0L
 
 # Window
 # Beaware of data size
@@ -55,18 +53,25 @@ workers = 1L
 windows = c(66, 252) # day and 2H;  cca 10 days
 
 # Define at parameter
-at_ = merge(ohlcv$X[, .(symbol, date)],
-            dataset[, .(symbol, date, index = TRUE)],
-            by = c("symbol", "date"), all.x = TRUE, all.y = FALSE)
-at_ = at_[, which(index == TRUE)]
+at_ = ohlcv$X[, which(pbs_i == TRUE)]
 
 # Help function to save rolling predictors output
 create_path = function(name) {
   file.path(PATH_PREDICTORS, paste0(name, "-", symbol_i, ".csv"))
 }
 
+# Daily Ohlcv data
+ohlcv_features = OhlcvFeaturesDaily$new(
+  at = prices[, which(eom == 1)],
+  windows = c(5, 10, 22, 44, 66, 125, 252, 500, 1000),
+  quantile_divergence_window = c(22, 44, 66, 125, 252, 500, 1000)
+)
+ohlcv_predictors = ohlcv_features$get_ohlcv_features(prices)
+path_ = create_path("ohlcv")
+fwrite(ohlcv_predictors, path_)
+
 # Exuber
-path_ =   create_path("exuber")
+path_ = create_path("exuber")
 windows_ = c(windows, 504)
 if (max(at_) > min(windows)) {
   exuber_init = RollingExuber$new(
@@ -110,7 +115,7 @@ if (max(at_) > min(windows)) {
 }
 
 # Forecasts with prices
-path_ = create_path("forecasts")
+path_ = create_path("forecasts_prices")
 windows_ = c(252, 252 * 2)
 if (max(at_) > min(windows)) {
   forecasts_init = RollingForecats$new(
@@ -118,7 +123,7 @@ if (max(at_) > min(windows)) {
     workers = workers,
     at = at_,
     lag = lag_,
-    forecast_type = c("autoarima", "nnetar", "ets"),
+    forecast_type = c("autoarima"),
     h = 22)
   forecasts = suppressMessages(forecasts_init$get_rolling_features(ohlcv))
   fwrite(forecasts, path_)

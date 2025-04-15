@@ -129,8 +129,8 @@ search_space = ps(
   
   # preprocessing
   filter_target_branch.selection = p_fct(levels = c("nop_filter_target", "filter_target_select")),
-  filter_target.lower_percentile = p_dbl(0.1, 0.3),
-  filter_target.upper_percentile = p_dbl(0.70, 0.90),
+  filter_target.lower_percentile = p_dbl(0.1, 0.3, depends = filter_target_branch.selection == "filter_target_select"),
+  filter_target.upper_percentile = p_dbl(0.70, 0.90, depends = filter_target_branch.selection == "filter_target_select"),
   dropcor.method = p_fct(c("pearson", "spearman", "kendall")),
   dropcor.cutoff = p_fct(c("0.80", "0.90", "0.95", "0.99"),
                          trafo = function(x, param_set) return(as.double(x))),
@@ -259,7 +259,7 @@ if (interactive()) {
   submitJobs(ids = ids$job.id[1], resources = resources, reg = reg)
   
   # Check result
-  res_ = reduceResultsBatchmark(ids = 1:2, store_backends = FALSE, reg = reg)
+  res_ = reduceResultsBatchmark(ids = 1, store_backends = FALSE, reg = reg)
   res_dt = as.data.table(res_)
   res_dt$prediction
   predictions = lapply(res_dt$prediction, as.data.table)
