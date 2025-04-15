@@ -62,11 +62,11 @@ create_path = function(name) {
 
 # Daily Ohlcv data
 ohlcv_features = OhlcvFeaturesDaily$new(
-  at = prices[, which(eom == 1)],
+  at = at_,
   windows = c(5, 10, 22, 44, 66, 125, 252, 500, 1000),
   quantile_divergence_window = c(22, 44, 66, 125, 252, 500, 1000)
 )
-ohlcv_predictors = ohlcv_features$get_ohlcv_features(prices)
+ohlcv_predictors = ohlcv_features$get_ohlcv_features(ohlcv$X)
 path_ = create_path("ohlcv")
 fwrite(ohlcv_predictors, path_)
 

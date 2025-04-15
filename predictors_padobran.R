@@ -6,8 +6,8 @@ library(reticulate)
 
 
 # paths
-PATH_PREDICTORS = file.path("predictors_padobran_zoo_month")
-PATH_DATASET    = file.path("dataset_zoo_month")
+PATH_PREDICTORS = file.path("predictors_zoo_month")
+PATH_DATASET    = file.path("prices_zoo_month")
 
 # python environment
 # reticulate::use_virtualenv("/home/sn/projects_py/pyquant", required = TRUE)

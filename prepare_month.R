@@ -21,7 +21,7 @@ prices[, pbs_i := date == data.table::last(date), by = .(symbol, month)]
 prices[pbs_i == 1, .N] / nrow(prices) * 100
 
 # Save every symbol separately
-prices_dir = file.path(PATH_PRICES, "prices")
+prices_dir = file.path(PATH_PRICES, "prices_zoo_month")
 if (!dir.exists(prices_dir)) {
   dir.create(prices_dir)
 }
@@ -46,9 +46,9 @@ cont = sprintf(
 
 cd ${PBS_O_WORKDIR}
 
-apptainer run image_predictors.sif predictors_padobran.R",
+apptainer run image_predictors.sif predictors_padobran_zoo_month.R",
   length(list.files(prices_dir)))
-writeLines(cont, "predictors_padobran.sh")
+writeLines(cont, "predictors_padobran_zoo_month.sh")
 
 # Add to padobran
 # scp -r /home/sn/data/strategies/pead/prices padobran:/home/jmaric/peadml/prices
