@@ -33,7 +33,7 @@ symbol_i = symbols[i]
 
 # Get data
 # ohlcv = fread(file.path("D:/strategies/zoo/prices", paste0(symbol_i, ".csv")))
-ohlcv = fread(file.path("prices", paste0(symbol_i, ".csv")))
+ohlcv = fread(file.path(PATH_DATASET, paste0(symbol_i, ".csv")))
 
 # Create Ohlcv object
 ohlcv = Ohlcv$new(ohlcv[, .(symbol, date, open, high, low, close, volume, pbs_i)], 
