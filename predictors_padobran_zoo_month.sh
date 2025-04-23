@@ -3,7 +3,7 @@
 #PBS -N pead_predictions
 #PBS -l ncpus=1
 #PBS -l mem=4GB
-#PBS -J 1-14750
+#PBS -J 1-14765
 #PBS -o logs
 #PBS -j oe
 

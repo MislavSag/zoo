@@ -5,11 +5,12 @@ library(janitor)
 
 
 # Globals
-PATH_PRICES = "D:/strategies/zoo"
+PATH_PRICES = "/home/sn/data/strategies/zoo"
+if (!dir.exists(PATH_PRICES)) dir.create(PATH_PRICES)
 
 # Import daily data
 prices = qc_daily(
-  file_path   = "F:/lean/data/stocks_daily.csv",
+  file_path   = "/home/sn/lean/data/stocks_daily.csv",
   min_obs     = 1001,
   duplicates  = "fast",
   add_dv_rank = TRUE

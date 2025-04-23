@@ -28,7 +28,7 @@ From: r-base:4.4.3
   R --slave -e 'install.packages("reticulate")'
   R --slave -e 'install.packages("exuber")'
   R --slave -e 'remotes::install_github("ottosven/backCUSUM")'
-  R --slave -e 'remotes::install_github("MislavSag/theftms")'
+  R --slave -e 'remotes::install_github("MislavSag/theft")'
   R --slave -e 'install.packages("forecast")'
   R --slave -e 'install.packages("tsfeatures")'
   R --slave -e 'install.packages("WaveletArima")'
