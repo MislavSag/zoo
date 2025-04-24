@@ -6,17 +6,28 @@ library(reticulate)
 
 
 # paths
-PATH_PREDICTORS = file.path("predictors_zoo_month")
-PATH_DATASET    = file.path("prices_zoo_month")
+if (interactive()) {
+  PATH_PREDICTORS = file.path("predictors_zoo_month")
+  PATH_DATASET    = file.path("/home/sn/data/strategies/zoo/prices_zoo_month")
+} else {
+  PATH_PREDICTORS = file.path("predictors_zoo_month")
+  PATH_DATASET    = file.path("prices_zoo_month")
+}
 
-# python environment
-# reticulate::use_virtualenv("/home/sn/projects_py/pyquant", required = TRUE)
-# theftms::init_theft("/opt/venv")
-reticulate::use_virtualenv("/opt/venv")
-tsfel = reticulate::import("tsfel")
-tsfresh = reticulate::import("tsfresh", convert = FALSE)
-warnigns = reticulate::import("warnings", convert = FALSE)
-warnigns$filterwarnings('ignore')
+# Python environment
+if (interactive()) {
+  reticulate::use_virtualenv("/home/sn/projects_py/pyquant", required = TRUE)
+  tsfel = reticulate::import("tsfel")
+  tsfresh = reticulate::import("tsfresh", convert = FALSE)
+  warnigns = reticulate::import("warnings", convert = FALSE)
+  warnigns$filterwarnings('ignore')  
+} else {
+  reticulate::use_virtualenv("/opt/venv")
+  tsfel = reticulate::import("tsfel")
+  tsfresh = reticulate::import("tsfresh", convert = FALSE)
+  warnigns = reticulate::import("warnings", convert = FALSE)
+  warnigns$filterwarnings('ignore')
+}
 
 # Create directory if it doesnt exists
 if (!dir.exists(PATH_PREDICTORS)) {
@@ -24,40 +35,32 @@ if (!dir.exists(PATH_PREDICTORS)) {
 }
 
 # Get index
-i = as.integer(Sys.getenv('PBS_ARRAY_INDEX'))
+if (interactive()) {
+  i = 1L
+} else {
+  i = as.integer(Sys.getenv('PBS_ARRAY_INDEX')) 
+}
 
 # Get symbol
-# symbols = gsub("\\.csv", "", list.files("D:/strategies/zoo/prices"))
 symbols = gsub("\\.csv", "", list.files(PATH_DATASET))
 symbol_i = symbols[i]
 
-# Get data
-# ohlcv = fread(file.path("D:/strategies/zoo/prices", paste0(symbol_i, ".csv")))
+# Import Ohlcv data
 ohlcv = fread(file.path(PATH_DATASET, paste0(symbol_i, ".csv")))
-
-# Create Ohlcv object
 ohlcv = Ohlcv$new(ohlcv[, .(symbol, date, open, high, low, close, volume, pbs_i)], 
                   date_col = "date")
 
-# Lag parameter
-# ako je red u events amc. label je open_t+1 / close_t; lag je 1L
-# ako je red u events bmo. label je open_t / close_t-1; lag je 2L
-# radi jednostavnosti lag_ = 2L
+# Parameters
 lag_ = 0L
-
-# Window
-# Beaware of data size
 workers = 1L
-
-# Default windows. Set widnows you use the most in rolling predictors
-windows = c(66, 252) # day and 2H;  cca 10 days
-
-# Define at parameter
+windows = c(66, 252)
 at_ = ohlcv$X[, which(pbs_i == TRUE)]
 
-# Help function to save rolling predictors output
-create_path = function(name) {
-  file.path(PATH_PREDICTORS, paste0(name, "-", symbol_i, ".csv"))
+# Utils
+wide_to_long = function(dt, label) {
+  print(label)
+  dt[, feature_set := label]
+  melt(dt, id.vars = c("symbol", "date", "feature_set"))
 }
 
 # Daily Ohlcv data
@@ -67,11 +70,9 @@ ohlcv_features = OhlcvFeaturesDaily$new(
   quantile_divergence_window = c(22, 44, 66, 125, 252, 500, 1000)
 )
 ohlcv_predictors = ohlcv_features$get_ohlcv_features(ohlcv$X)
-path_ = create_path("ohlcv")
-fwrite(ohlcv_predictors, path_)
+ohlcv_predictors = wide_to_long(ohlcv_predictors, "ohlcv")
 
 # Exuber
-path_ = create_path("exuber")
 windows_ = c(windows, 504)
 if (max(at_) > min(windows)) {
   exuber_init = RollingExuber$new(
@@ -81,12 +82,11 @@ if (max(at_) > min(windows)) {
     lag = lag_,
     exuber_lag = c(1L)
   )
-  exuber = exuber_init$get_rolling_features(ohlcv, log_prices = TRUE)
-  fwrite(exuber, path_)
+  exuber <<- exuber_init$get_rolling_features(ohlcv, log_prices = TRUE)
 }
+exuber = wide_to_long(exuber, "exuber")
 
 # Backcusum
-path_ = create_path("backcusum")
 if (max(at_) > min(windows)) {
   backcusum_init = RollingBackcusum$new(
     windows = windows_,
@@ -95,12 +95,11 @@ if (max(at_) > min(windows)) {
     lag = lag_,
     alternative = c("greater", "two.sided"),
     return_power = c(1, 2))
-  backcusum = backcusum_init$get_rolling_features(ohlcv)
-  fwrite(backcusum, path_) 
+  backcusum <<- backcusum_init$get_rolling_features(ohlcv)
 }
+backcusum = wide_to_long(backcusum, "backcusum")
 
 # Forecasts
-path_ = create_path("forecasts")
 windows_ = c(252, 252 * 2)
 if (max(at_) > min(windows)) {
   forecasts_init = RollingForecats$new(
@@ -110,12 +109,11 @@ if (max(at_) > min(windows)) {
     lag = lag_,
     forecast_type = c("autoarima", "nnetar", "ets"),
     h = 22)
-  forecasts = suppressMessages(forecasts_init$get_rolling_features(ohlcv, price_col = "returns"))
-  fwrite(forecasts, path_)
+  forecastsr <<- suppressMessages(forecasts_init$get_rolling_features(ohlcv, price_col = "returns"))
 }
+forecastsr = wide_to_long(forecastsr, "forecastsr")
 
 # Forecasts with prices
-path_ = create_path("forecasts_prices")
 windows_ = c(252, 252 * 2)
 if (max(at_) > min(windows)) {
   forecasts_init = RollingForecats$new(
@@ -125,12 +123,11 @@ if (max(at_) > min(windows)) {
     lag = lag_,
     forecast_type = c("autoarima"),
     h = 22)
-  forecasts = suppressMessages(forecasts_init$get_rolling_features(ohlcv))
-  fwrite(forecasts, path_)
+  forecasts <<- suppressMessages(forecasts_init$get_rolling_features(ohlcv))
 }
+forecasts = wide_to_long(forecasts, "forecasts")
 
 # Theft r
-path_ = create_path("theftr")
 windows_ = c(5, 22, windows)
 if (max(at_) > min(windows)) {
   theft_init = RollingTheft$new(
@@ -139,12 +136,11 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     features_set = c("catch22", "feasts"))
-  theft_r = theft_init$get_rolling_features(ohlcv)
-  fwrite(theft_r, path_)
+  theftr <<- theft_init$get_rolling_features(ohlcv)
 }
+theftr = wide_to_long(theftr, "theftr")
 
 # Theft r with returns
-path_ = create_path("theftrr")
 windows_ = c(5, 22, windows)
 if (max(at_) > min(windows)) {
   theft_init = RollingTheft$new(
@@ -153,12 +149,11 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     features_set = c("catch22", "feasts"))
-  theft_r = theft_init$get_rolling_features(ohlcv, price_col = "returns")
-  fwrite(theft_r, path_)
+  theftrr <<- theft_init$get_rolling_features(ohlcv, price_col = "returns")
 }
+theftrr = wide_to_long(theftrr, "theftrr")
 
 # Theft py with returns
-path_ = create_path("theftpy")
 windows_ = c(22, windows)
 if (max(at_) > min(windows)) {
   theft_init = RollingTheft$new(
@@ -167,12 +162,11 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     features_set = "tsfresh") # c("tsfel", "tsfresh"))
-  theft_py = suppressMessages(theft_init$get_rolling_features(ohlcv, price_col = "returns"))
-  fwrite(theft_py, path_)
+  theftpyr <<- suppressMessages(theft_init$get_rolling_features(ohlcv, price_col = "returns"))
 }
+theftpyr = wide_to_long(theftpyr, "theftpyr")
 
 # Theft py
-path_ = create_path("theftpyr")
 windows_ = c(22, windows)
 if (max(at_) > min(windows)) {
   theft_init = RollingTheft$new(
@@ -181,12 +175,11 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     features_set = "tsfresh") # c("tsfel", "tsfresh"))
-  theft_py = suppressMessages(theft_init$get_rolling_features(ohlcv))
-  fwrite(theft_py, path_)
+  theftpy <<- suppressMessages(theft_init$get_rolling_features(ohlcv))
 }
+theftpy = wide_to_long(theftpy, "theftpy")
 
 # Tsfeatures
-path_ = create_path("tsfeatures")
 if (max(at_) > min(windows)) {
   tsfeatures_init = RollingTsfeatures$new(
     windows = windows,
@@ -194,12 +187,11 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     scale = TRUE)
-  tsfeatures = suppressMessages(tsfeatures_init$get_rolling_features(ohlcv))
-  fwrite(tsfeatures, path_)
+  tsfeatures <<- suppressMessages(tsfeatures_init$get_rolling_features(ohlcv))
 }
+tsfeatures = wide_to_long(tsfeatures, "tsfeatures")
 
 # WaveletArima
-path_ = create_path("waveletarima")
 if (max(at_) > min(windows)) {
   waveletarima_init = RollingWaveletArima$new(
     windows = windows,
@@ -207,12 +199,11 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     filter = "haar")
-  waveletarima = suppressMessages(waveletarima_init$get_rolling_features(ohlcv))
-  fwrite(waveletarima, path_)
+  waveletarima <<- suppressMessages(waveletarima_init$get_rolling_features(ohlcv))
 }
+waveletarima = wide_to_long(waveletarima, "waveletarima")
 
 # FracDiff
-path_ = create_path("fracdiff")
 if (max(at_) > min(windows)) {
   fracdiff_init = RollingFracdiff$new(
     windows = windows,
@@ -222,12 +213,11 @@ if (max(at_) > min(windows)) {
     nar = c(1), 
     nma = c(1),
     bandw_exp = c(0.1, 0.5, 0.9))
-  fracdiff = suppressMessages(fracdiff_init$get_rolling_features(ohlcv))
-  fwrite(fracdiff, path_)
+  fracdiff <<- suppressMessages(fracdiff_init$get_rolling_features(ohlcv))
 }
+fracdiff = wide_to_long(fracdiff, "fracdiff")
 
 # VSE
-path_ = create_path("vse")
 windows_ = c(22, 44, 150, windows, 504)
 if (max(at_) > min(windows)) {
   vse_init = RollingVse$new(
@@ -236,6 +226,14 @@ if (max(at_) > min(windows)) {
     at = at_,
     lag = lag_,
     m = c(0.4, 0.5))
-  vse = vse_init$get_rolling_features(ohlcv)
-  fwrite(vse, path_)
+  vse <<- vse_init$get_rolling_features(ohlcv)
 }
+vse = wide_to_long(vse, "vse")
+
+# Merge all indicators
+predictors = rbindlist(list(ohlcv_predictors, exuber, backcusum, forecasts, 
+                            forecastsr, theftr, theftrr, theftpyr, theftpy,
+                            tsfeatures, waveletarima, fracdiff, vse))
+
+# Save
+fwrite(predictors[, .SD, .SDcols = -"symbol"], paste0(predictors[1, symbol], ".csv"))
