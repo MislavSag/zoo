@@ -236,4 +236,5 @@ predictors = rbindlist(list(ohlcv_predictors, exuber, backcusum, forecasts,
                             tsfeatures, waveletarima, fracdiff, vse))
 
 # Save
-fwrite(predictors[, .SD, .SDcols = -"symbol"], paste0(predictors[1, symbol], ".csv"))
+fwrite(predictors[, .SD, .SDcols = -"symbol"], 
+       file.path(PATH_PREDICTORS, paste0(predictors[1, symbol], ".csv")))
