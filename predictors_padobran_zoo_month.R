@@ -166,7 +166,7 @@ if (max(at_) > min(windows)) {
     workers = 1L,
     at = at_,
     lag = lag_,
-    features_set = c("tsfel", "tsfresh"))
+    features_set = "tsfresh") # c("tsfel", "tsfresh"))
   theft_py = suppressMessages(theft_init$get_rolling_features(ohlcv, price_col = "returns"))
   fwrite(theft_py, path_)
 }
@@ -180,7 +180,7 @@ if (max(at_) > min(windows)) {
     workers = 1L,
     at = at_,
     lag = lag_,
-    features_set = c("tsfel", "tsfresh"))
+    features_set = "tsfresh") # c("tsfel", "tsfresh"))
   theft_py = suppressMessages(theft_init$get_rolling_features(ohlcv))
   fwrite(theft_py, path_)
 }
