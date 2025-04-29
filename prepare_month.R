@@ -21,6 +21,21 @@ prices[, month := yearmon(date)]
 prices[, pbs_i := date == data.table::last(date), by = .(symbol, month)]
 prices[pbs_i == 1, .N] / nrow(prices) * 100
 
+# Create target variables
+targets = prices[, .(open = data.table::first(open), close = data.table::last(close)), by = .(symbol, month)] |>
+  _[order(symbol, month)] |>
+  _[, let(
+    target_m = shift(close, 1, type = "lead") / shift(open, 1, type = "lead") - 1,
+    target_q = shift(close, 3, type = "lead") / shift(open, 1, type = "lead") - 1,
+    target_h = shift(close, 6, type = "lead") / shift(open, 1, type = "lead") - 1,
+    target_y = shift(close, 12, type = "lead") / shift(open, 1, type = "lead") - 1
+  ), by = symbol]
+prices = targets[, .SD, .SDcols = -c("open", "close")][prices, on = c("symbol", "month")]
+prices[pbs_i == FALSE, let(
+  target_m = NA, target_q = NA, target_h = NA, target_y = NA
+)]
+prices[pbs_i == TRUE]
+
 # Save every symbol separately
 prices_dir = file.path(PATH_PRICES, "prices_zoo_month")
 if (!dir.exists(prices_dir)) {
@@ -43,7 +58,7 @@ cont = sprintf(
 #PBS -l mem=4GB
 #PBS -J 1-%d
 #PBS -o logs
-#PBS -j oe
+#PBS -j e
 
 cd ${PBS_O_WORKDIR}
 
